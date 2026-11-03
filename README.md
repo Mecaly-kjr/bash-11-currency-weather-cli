@@ -49,7 +49,7 @@ Freelancers in Cameroon receive payments in different currencies and need reliab
 ![alt text](<asset/images/Screenshot From 2026-11-02 16-20-47.png>)
 ![alt text](<asset/images/Screenshot From 2026-11-02 16-21-12.png>)
 ![alt text](<asset/images/Screenshot From 2026-11-02 16-21-25.png>)
-![alt text](<asset/images/Screenshot From 2026-11-02 16-22-13.png>)
+![alt text](<asset/images/Screenshot From 2026-11-03 12-44-56.png>)
 
 ---
 
@@ -73,6 +73,9 @@ Make scripts executable:
 
 ```bash
 chmod +x fx.sh meteo.sh
+bash -n lib.sh
+bash -n fx.sh
+bash -n meteo.sh
 ```
 
 ---
@@ -83,14 +86,15 @@ chmod +x fx.sh meteo.sh
 
 ```bash
 ./fx.sh 250 USD XAF
-./fx.sh 100 EUR XAF
+./fx.sh 100000 XAF EUR
+./fx.sh 200 EUR XAF
 ```
 
 **Weather information:**
 
 ```bash
-./meteo.sh
 ./meteo.sh Bamenda
+./meteo.sh Buea
 ./meteo.sh "New York"
 ```
 

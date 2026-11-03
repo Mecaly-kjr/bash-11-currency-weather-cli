@@ -10,10 +10,10 @@ usage() {
 }
 
 # Check the number of arguments
-[[ $# -le 1 ]] || {
+if [[ $# -gt 1 ]]; then
     usage
     exit 2
-}
+fi
 
 # Select city from argument, environment variable or default
 city="${1:-${METEO_CITY:-Yaounde}}"
@@ -21,14 +21,19 @@ city="${1:-${METEO_CITY:-Yaounde}}"
 # Validate city
 [[ -n "$city" ]] || die "City name cannot be empty" 2
 
-# Replace spaces with +
-city_url="${city// /+}"
+# URL-encode the city name
+city_url=$(jq -rn --arg c "$city" '$c | @uri')
 
 # Build weather API URL
 url="https://wttr.in/${city_url}?format=j1"
 
 # Fetch weather information
 response=$(fetch_url "$url") || exit $?
+
+# Check whether the response is valid JSON
+if ! jq -e . >/dev/null 2>&1 <<< "$response"; then
+    die "City '$city' not found or weather data is unavailable" 1
+fi
 
 # Extract current temperature
 temperature=$(jq -r \
@@ -53,5 +58,5 @@ humidity=$(jq -r \
     die "Unable to retrieve humidity for $city" 1
 
 # Display weather information
-printf "%s: %s°C, %s, humidity %s%%\n" \
+printf '%s: %s°C, %s, humidity %s%%\n' \
     "$city" "$temperature" "$description" "$humidity"
