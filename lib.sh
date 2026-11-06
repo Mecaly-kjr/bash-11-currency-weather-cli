@@ -19,3 +19,20 @@ fetch_url() {
 
     printf '%s\n' "$response"
 }
+
+# Fetch data while preserving HTTP error responses
+fetch_url_with_status() {
+    local url="$1"
+    local response
+    local curl_status
+
+    response=$(curl -sS --max-time 10 \
+        -w $'\n%{http_code}' "$url")
+    curl_status=$?
+
+    if [[ "$curl_status" -ne 0 ]]; then
+        die "Network error: unable to connect. Check your internet connection." 1
+    fi
+
+    printf '%s\n' "$response"
+}

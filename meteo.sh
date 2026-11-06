@@ -27,23 +27,34 @@ city_url=$(jq -rn --arg c "$city" '$c | @uri')
 # Build weather API URL
 url="https://wttr.in/${city_url}?format=j1"
 
-# Fetch weather information
-response=$(fetch_url "$url") || exit $?
+# Fetch weather information and HTTP status
+raw_response=$(fetch_url_with_status "$url") || exit $?
+
+# Separate response body and HTTP status
+http_status="${raw_response##*$'\n'}"
+response="${raw_response%$'\n'*}"
+
+# Handle HTTP errors
+if [[ "$http_status" != "200" ]]; then
+    if [[ "$response" =~ [Nn]ot[[:space:]]found|[Uu]nknown[[:space:]]location|[Ll]ocation[[:space:]]not[[:space:]]found ]]; then
+        die "City '$city' not found. Please check the city name." 2
+    fi
+
+    die "Weather service returned HTTP $http_status. Please try again later." 1
+fi
 
 # Check whether the response is valid JSON
 if ! jq -e . >/dev/null 2>&1 <<< "$response"; then
-    die "City '$city' not found or weather data is unavailable" 1
+    die "Invalid weather data received for $city" 1
 fi
 
-# Extract current temperature
+# Extract current weather information
 temperature=$(jq -r \
     '.current_condition[0].temp_C // empty' <<< "$response")
 
-# Extract weather description
 description=$(jq -r \
     '.current_condition[0].weatherDesc[0].value // empty' <<< "$response")
 
-# Extract humidity
 humidity=$(jq -r \
     '.current_condition[0].humidity // empty' <<< "$response")
 
